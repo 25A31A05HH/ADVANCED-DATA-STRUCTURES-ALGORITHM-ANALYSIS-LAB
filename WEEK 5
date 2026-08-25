@@ -1,0 +1,183 @@
+a) Adjacency Matrix
+
+#include <iostream>
+#include <queue>
+#include <stack>
+using namespace std;
+
+class GraphMatrix {
+    int V;                // number of vertices
+    int **adj;            // adjacency matrix
+
+public:
+    GraphMatrix(int vertices) {
+        V = vertices;
+        adj = new int*[V];
+        for (int i = 0; i < V; i++) {
+            adj[i] = new int[V];
+            for (int j = 0; j < V; j++)
+                adj[i][j] = 0;
+        }
+    }
+
+    // add undirected edge
+    void addEdge(int u, int v) {
+        adj[u][v] = 1;
+        adj[v][u] = 1;
+    }
+
+    // Breadth‑First Traversal from start
+    void BFT(int start) {
+        bool *visited = new bool[V]{false};
+        queue<int> q;
+
+        visited[start] = true;
+        q.push(start);
+
+        cout << "BFT (starting from " << start << "): ";
+        while (!q.empty()) {
+            int u = q.front(); q.pop();
+            cout << u << " ";
+
+            for (int v = 0; v < V; v++) {
+                if (adj[u][v] && !visited[v]) {
+                    visited[v] = true;
+                    q.push(v);
+                }
+            }
+        }
+        cout << endl;
+        delete[] visited;
+    }
+
+    // Depth‑First Traversal (recursive helper)
+    void DFSUtil(int v, bool visited[]) {
+        visited[v] = true;
+        cout << v << " ";
+
+        for (int u = 0; u < V; u++) {
+            if (adj[v][u] && !visited[u])
+                DFSUtil(u, visited);
+        }
+    }
+
+    void DFT(int start) {
+        bool *visited = new bool[V]{false};
+        cout << "DFT (starting from " << start << "): ";
+        DFSUtil(start, visited);
+        cout << endl;
+        delete[] visited;
+    }
+
+    ~GraphMatrix() {
+        for (int i = 0; i < V; i++)
+            delete[] adj[i];
+        delete[] adj;
+    }
+};
+
+int main() {
+    // Create a graph with 5 vertices (0..4)
+    GraphMatrix g(5);
+
+    // Add edges (undirected)
+    g.addEdge(0, 1);
+    g.addEdge(0, 2);
+    g.addEdge(1, 3);
+    g.addEdge(1, 4);
+    g.addEdge(2, 4);
+
+    // Traversals from vertex 0
+    g.BFT(0);
+    g.DFT(0);
+
+    return 0;
+}
+
+Sample Output:
+
+BFT (starting from 0): 0 1 2 3 4 
+DFT (starting from 0): 0 1 3 4 2
+
+
+b) Adjacency Lists
+BFT and DFT of a graph when graph is in Adjacency list.
+
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <stack>
+using namespace std;
+
+class GraphList {
+    int V;
+    vector<vector<int>> adj;   // adjacency list
+
+public:
+    GraphList(int vertices) : V(vertices), adj(vertices) {}
+
+    // add undirected edge
+    void addEdge(int u, int v) {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    // Breadth‑First Traversal
+    void BFT(int start) {
+        vector<bool> visited(V, false);
+        queue<int> q;
+
+        visited[start] = true;
+        q.push(start);
+
+        cout << "BFT (starting from " << start << "): ";
+        while (!q.empty()) {
+            int u = q.front(); q.pop();
+            cout << u << " ";
+
+            for (int v : adj[u]) {
+                if (!visited[v]) {
+                    visited[v] = true;
+                    q.push(v);
+                }
+            }
+        }
+        cout << endl;
+    }
+
+    // Depth‑First Traversal (recursive)
+    void DFSUtil(int v, vector<bool>& visited) {
+        visited[v] = true;
+        cout << v << " ";
+
+        for (int u : adj[v]) {
+            if (!visited[u])
+                DFSUtil(u, visited);
+        }
+    }
+
+    void DFT(int start) {
+        vector<bool> visited(V, false);
+        cout << "DFT (starting from " << start << "): ";
+        DFSUtil(start, visited);
+        cout << endl;
+    }
+};
+
+int main() {
+    // Create a graph with 5 vertices (0..4)
+    GraphList g(5);
+
+    // Add edges (same graph as above)
+    g.addEdge(0, 1);
+    g.addEdge(0, 2);
+    g.addEdge(1, 3);
+    g.addEdge(1, 4);
+    g.addEdge(2, 4);
+
+    // Traversals from vertex 0
+    g.BFT(0);
+    g.DFT(0);
+
+    return 0;
+}
