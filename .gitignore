@@ -1,0 +1,16 @@
+# Compiled Executables
+*.exe
+*.out
+*.app
+*.o
+*.obj
+
+# IDE and Editor configurations
+.vscode/
+.idea/
+cmake-build-debug/
+*.user
+
+# OS-specific system files
+.DS_Store
+Thumbs.db
