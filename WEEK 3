@@ -1,0 +1,185 @@
+#include <iostream>
+
+using namespace std;
+
+class Heap
+{
+private:
+
+    int arr[100];
+    int n;
+
+public:
+
+    Heap()
+    {
+        n = 0;
+    }
+
+    // Read elements
+    void readElements()
+    {
+        cout << "Enter number of elements: ";
+        cin >> n;
+
+        cout << "Enter " << n << " elements:\n";
+
+        for(int i=0;i<n;i++)
+            cin >> arr[i];
+    }
+
+    // Swap two elements
+    void swapValues(int &a, int &b)
+    {
+        int temp;
+        temp = a;
+        a = b;
+        b = temp;
+    }
+
+    //----------------------------------------
+    // Min Heapify
+    //----------------------------------------
+    void minHeapify(int i, int size)
+    {
+        int smallest = i;
+        int left = 2*i + 1;
+        int right = 2*i + 2;
+
+        if(left < size && arr[left] < arr[smallest])
+            smallest = left;
+
+        if(right < size && arr[right] < arr[smallest])
+            smallest = right;
+
+        if(smallest != i)
+        {
+            swapValues(arr[i], arr[smallest]);
+            minHeapify(smallest, size);
+        }
+    }
+
+    //----------------------------------------
+    // Max Heapify
+    //----------------------------------------
+    void maxHeapify(int i, int size)
+    {
+        int largest = i;
+        int left = 2*i + 1;
+        int right = 2*i + 2;
+
+        if(left < size && arr[left] > arr[largest])
+            largest = left;
+
+        if(right < size && arr[right] > arr[largest])
+            largest = right;
+
+        if(largest != i)
+        {
+            swapValues(arr[i], arr[largest]);
+            maxHeapify(largest, size);
+        }
+    }
+
+    //----------------------------------------
+    // Build Min Heap
+    //----------------------------------------
+    void buildMinHeap()
+    {
+        for(int i=(n/2)-1; i>=0; i--)
+            minHeapify(i, n);
+    }
+
+    //----------------------------------------
+    // Build Max Heap
+    //----------------------------------------
+    void buildMaxHeap()
+    {
+        for(int i=(n/2)-1; i>=0; i--)
+            maxHeapify(i, n);
+    }
+
+    //----------------------------------------
+    // Delete Minimum Element
+    //----------------------------------------
+    void deleteMin()
+    {
+        if(n==0)
+        {
+            cout << "Heap is Empty\n";
+            return;
+        }
+
+        arr[0]=arr[n-1];
+        n--;
+
+        minHeapify(0,n);
+    }
+
+    //----------------------------------------
+    // Delete Maximum Element
+    //----------------------------------------
+    void deleteMax()
+    {
+        if(n==0)
+        {
+            cout << "Heap is Empty\n";
+            return;
+        }
+
+        arr[0]=arr[n-1];
+        n--;
+
+        maxHeapify(0,n);
+    }
+
+    //----------------------------------------
+    // Display Heap
+    //----------------------------------------
+    void display()
+    {
+        for(int i=0;i<n;i++)
+            cout << arr[i] << " ";
+
+        cout << endl;
+    }
+
+};
+
+int main()
+{
+    Heap minHeap;
+    Heap maxHeap;
+
+    cout << "========= MIN HEAP =========\n\n";
+
+    minHeap.readElements();
+
+    minHeap.buildMinHeap();
+
+    cout << "\nMin Heap is:\n";
+    minHeap.display();
+
+    minHeap.deleteMin();
+
+    cout << "\nAfter deleting minimum element:\n";
+    minHeap.display();
+
+    cout << "\n=============================\n\n";
+
+    cout << "========= MAX HEAP =========\n\n";
+
+    maxHeap.readElements();
+
+    maxHeap.buildMaxHeap();
+
+    cout << "\nMax Heap is:\n";
+    maxHeap.display();
+
+    maxHeap.deleteMax();
+
+    cout << "\nAfter deleting maximum element:\n";
+    maxHeap.display();
+
+    return 0;
+}
