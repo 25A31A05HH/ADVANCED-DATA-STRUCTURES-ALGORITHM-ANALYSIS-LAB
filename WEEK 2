@@ -1,0 +1,234 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+// AVL Tree Node Structure
+struct Node {
+    int key;
+    Node* left;
+    Node* right;
+    int height;
+
+    Node(int val) : key(val), left(nullptr), right(nullptr), height(1) {}
+};
+
+// Utility function to get the height of the node
+int getHeight(Node* n) {
+    return n == nullptr ? 0 : n->height;
+}
+
+// Utility function to get the balance factor of the node
+int getBalance(Node* n) {
+    return n == nullptr ? 0 : getHeight(n->left) - getHeight(n->right);
+}
+
+// Right Rotate (Single Rotation)
+Node* rightRotate(Node* y) {
+    Node* x = y->left;
+    Node* T2 = x->right;
+
+    // Perform rotation
+    x->right = y;
+    y->left = T2;
+
+    // Update heights
+    y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
+    x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
+
+    return x; // New root
+}
+
+// Left Rotate (Single Rotation)
+Node* leftRotate(Node* x) {
+    Node* y = x->right;
+    Node* T2 = y->left;
+
+    // Perform rotation
+    y->left = x;
+    x->right = T2;
+
+    // Update heights
+    x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
+    y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
+
+    return y; // New root
+}
+
+// Insert a key into the AVL Tree and maintain balance
+Node* insertNode(Node* node, int key) {
+    // 1. Perform standard BST insertion
+    if (node == nullptr) {
+        return new Node(key);
+    }
+
+    if (key < node->key) {
+        node->left = insertNode(node->left, key);
+    } else if (key > node->key) {
+        node->right = insertNode(node->right, key);
+    } else {
+        return node; // Duplicate keys are not allowed in basic AVL
+    }
+
+    // 2. Update height of this ancestor node
+    node->height = 1 + max(getHeight(node->left), getHeight(node->right));
+
+    // 3. Get the balance factor to check if it became unbalanced
+    int balance = getBalance(node);
+
+    // Left Left Case
+    if (balance > 1 && key < node->left->key) {
+        return rightRotate(node);
+    }
+
+    // Right Right Case
+    if (balance < -1 && key > node->right->key) {
+        return leftRotate(node);
+    }
+
+    // Left Right Case
+    if (balance > 1 && key > node->left->key) {
+        node->left = leftRotate(node->left);
+        return rightRotate(node);
+    }
+
+    // Right Left Case
+    if (balance < -1 && key < node->right->key) {
+        node->right = rightRotate(node->right);
+        return leftRotate(node);
+    }
+
+    return node;
+}
+
+// Find the node with the minimum value (used for deletion)
+Node* minValueNode(Node* node) {
+    Node* current = node;
+    while (current->left != nullptr) {
+        current = current->left;
+    }
+    return current;
+}
+
+// Delete a key from the AVL Tree and maintain balance
+Node* deleteNode(Node* root, int key) {
+    // 1. Perform standard BST delete
+    if (root == nullptr) return root;
+
+    if (key < root->key) {
+        root->left = deleteNode(root->left, key);
+    } else if (key > root->key) {
+        root->right = deleteNode(root->right, key);
+    } else {
+        // Node with only one child or no child
+        if ((root->left == nullptr) || (root->right == nullptr)) {
+            Node* temp = root->left ? root->left : root->right;
+
+            // No child case
+            if (temp == nullptr) {
+                temp = root;
+                root = nullptr;
+            } else { // One child case
+                *root = *temp; // Copy contents of non-empty child
+            }
+            delete temp;
+        } else {
+            // Node with two children: Get the inorder successor
+            Node* temp = minValueNode(root->right);
+
+            // Copy the inorder successor's data to this node
+            root->key = temp->key;
+
+            // Delete the inorder successor
+            root->right = deleteNode(root->right, temp->key);
+        }
+    }
+
+    // If the tree had only one node, return
+    if (root == nullptr) return root;
+
+    // 2. Update height of the current node
+    root->height = 1 + max(getHeight(root->left), getHeight(root->right));
+
+    // 3. Get the balance factor
+    int balance = getBalance(root);
+
+    // Left Left Case
+    if (balance > 1 && getBalance(root->left) >= 0) {
+        return rightRotate(root);
+    }
+
+    // Left Right Case
+    if (balance > 1 && getBalance(root->left) < 0) {
+        root->left = leftRotate(root->left);
+        return rightRotate(root);
+    }
+
+    // Right Right Case
+    if (balance < -1 && getBalance(root->right) <= 0) {
+        return leftRotate(root);
+    }
+
+    // Right Left Case
+    if (balance < -1 && getBalance(root->right) > 0) {
+        root->right = rightRotate(root->right);
+        return leftRotate(root);
+    }
+
+    return root;
+}
+
+// Helper function to write In-order traversal directly to an output file stream
+void writeInOrder(Node* root, ofstream& outFile) {
+    if (root != nullptr) {
+        writeInOrder(root->left, outFile);
+        outFile << root->key << " ";
+        cout << root->key << " "; // Also print to console for visibility
+    }
+}
+
+int main() {
+    Node* root = nullptr;
+
+    // 1. Read elements from input.txt and construct the tree
+    ifstream inFile("input.txt");
+    if (!inFile) {
+        cerr << "Error: Could not open input.txt file!" << endl;
+        return 1;
+    }
+
+    int element;
+    cout << "Reading from input.txt and inserting into AVL Tree..." << endl;
+    while (inFile >> element) {
+        root = insertNode(root, element);
+    }
+    inFile.close();
+
+    // 2. Demonstration of insert operation
+    int elementToInsert = 28;
+    cout << "\nInserting new element (" << elementToInsert << ") into AVL Tree..." << endl;
+    root = insertNode(root, elementToInsert);
+
+    // 3. Demonstration of delete operation
+    int elementToDelete = 20;
+    cout << "Deleting element (" << elementToDelete << ") from AVL Tree..." << endl;
+    root = deleteNode(root, elementToDelete);
+
+    // 4. Write final tree contents to output.txt using In-order traversal
+    ofstream outFile("output.txt");
+    if (!outFile) {
+        cerr << "Error: Could not create output.txt file!" << endl;
+        return 1;
+    }
+
+    cout << "\nFinal Tree Contents (In-Order Traversal): ";
+    writeInOrder(root, outFile);
+    cout << endl;
+
+    outFile.close();
+    cout << "\nSuccess! Sorted data has been written to output.txt" << endl;
+
+    return 0;
+}
